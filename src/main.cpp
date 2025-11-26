@@ -4,6 +4,9 @@
 #include <vector>
 #include "solver.h"
 #include <mpi.h>
+#include <fstream>
+#include <filesystem>
+
 
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
@@ -33,10 +36,36 @@ int main(int argc, char** argv) {
     const double CFL = 0.4;
     const bool use_nonuniform_x = true; // set true to enable a simple nonuniform x-grid
     const double T_end = 5.0;
+    const bool read_mesh = true; // set true to read mesh from file (not implemented here)
 
+    
     std::vector<double> x_global(Nx_global, 0.0);
+
+    if (read_mesh) {
+        if (rank == 0) {
+            std::ifstream mesh_file("x.dat");
+            if (!mesh_file) {
+                std::cerr << "Error opening mesh file." << std::endl;
+                MPI_Finalize();
+                return 1;
+            }
+
+            int count = 0;
+            for (; count < Nx_global && (mesh_file >> x_global[count]); ++count) {
+                // read values directly into preallocated buffer
+            }
+
+            // if (count != Nx_global) {
+            //     std::cerr << "Mesh file x.dat has " << count
+            //               << " entries but Nx_global=" << Nx_global << "." << std::endl;
+            //     MPI_Finalize();
+            //     return 1;
+            // }
+        }
+        MPI_Bcast(x_global.data(), Nx_global, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }
+    else{
     if (use_nonuniform_x) {
-        // Example: piecewise spacing with a finer left half and coarser right half
         const int split = Nx_global / 2;
         const double dx_left = 0.5 * (x1 - x0) / static_cast<double>(split);
         const double dx_right = 0.3 * (x1 - x0) / static_cast<double>(Nx_global - split);
@@ -50,6 +79,7 @@ int main(int argc, char** argv) {
         for (int i = 1; i < Nx_global; ++i) {
             x_global[i] = x_global[i - 1] + dx;
         }
+    }
     }
 
     double dx_min = std::numeric_limits<double>::max();
