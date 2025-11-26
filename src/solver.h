@@ -15,15 +15,15 @@ void reconstruct_WENO5(const std::vector<double>& u, std::vector<double>& uL, st
 void rk3rd_step(std::vector<double>& u,std::vector<double>& u_new,std::vector<double>& x,std::vector<double>& u_old,double dt,int stage, int ibd, double u_advection);
 
 // 3D linear advection (MPI, advection only in x)
-void initialize_linear_advection3d(std::vector<double>& u, int local_nx, int Ny, int Nz,
+void initialize_linear_advection3d(std::vector<double>& u, std::vector<double>& v, std::vector<double>& w,int local_nx, int Ny, int Nz,
                                    int ibd, double x0, double dx, double dy, double dz,
-                                   int global_x_start, int global_nx,
+                                   int global_x_start, int global_nx,MPI_Comm comm,
                                    const std::vector<double>* x_global = nullptr);
-void simulate_linear_advection3d(std::vector<double>& u, int local_nx, int Ny, int Nz,
+void simulate_linear_advection3d(std::vector<double>& u, std::vector<double>& v, std::vector<double>& w,  int local_nx, int Ny, int Nz,
                                  int ibd, double dx, double dy, double dz,
                                  double x0, double y0, double z0,
                                  int global_x_start, int Nx_global, double u_advection, double dt,
-                                 double T_end, MPI_Comm comm,
+                                 double T_end,MPI_Comm comm,
                                  const std::vector<double>* x_global = nullptr);
 void write_txt_3d(const std::vector<double>& u, int local_nx, int Ny, int Nz,
                   int ibd, double x0, double dx, double dy, double dz,
@@ -38,7 +38,16 @@ void write_vtk_3d_global(const std::vector<double>& u, int local_nx, int Nx_glob
                          int Ny, int Nz, int ibd,
                          double x0, double y0, double z0,
                          double dx, double dy, double dz,
-                         int global_x_start, double time, MPI_Comm comm,
-                         const std::vector<double>* x_global = nullptr);
+                          int global_x_start, double time, MPI_Comm comm,
+                          const std::vector<double>* x_global = nullptr);
+void write_vtk_velocity_3d_global(const std::vector<double>& u,
+                                  const std::vector<double>& v,
+                                  const std::vector<double>& w,
+                                  int local_nx, int Nx_global,
+                                  int Ny, int Nz, int ibd,
+                                  double x0, double y0, double z0,
+                                  double dx, double dy, double dz,
+                                  int global_x_start, double time, MPI_Comm comm,
+                                  const std::vector<double>* x_global = nullptr);
 
 #endif

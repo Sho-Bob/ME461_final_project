@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    const int Nx_global = 256;
+    const int Nx_global = 128;
     const int Ny = 128;
     const int Nz = 128;
     const int ibd = 2; // one ghost layer on each side in x
@@ -109,9 +109,10 @@ int main(int argc, char** argv) {
                                    static_cast<std::size_t>(Ny) *
                                    static_cast<std::size_t>(Nz);
     std::vector<double> u(local_size, 0.0);
-
-    initialize_linear_advection3d(u, local_nx, Ny, Nz, ibd, x0, dx, dy, dz,
-                                  global_x_start, Nx_global, &x_global);
+    std::vector<double> v(local_size, 0.0);
+    std::vector<double> w(local_size, 0.0);
+    initialize_linear_advection3d(u, v, w,local_nx, Ny, Nz, ibd, x0, dx, dy, dz,
+                                  global_x_start, Nx_global, MPI_COMM_WORLD, &x_global);
 
     if (rank == 0) {
         std::cout << "3D linear advection: Nx=" << Nx_global
@@ -120,7 +121,7 @@ int main(int argc, char** argv) {
         std::cout << "dt=" << dt << " T_end=" << T_end << std::endl;
     }
 
-    simulate_linear_advection3d(u, local_nx, Ny, Nz, ibd,
+    simulate_linear_advection3d(u, v, w, local_nx, Ny, Nz, ibd,
                                 dx, dy, dz, x0, y0, z0,
                                 global_x_start, Nx_global, u_advection, dt, T_end,
                                 MPI_COMM_WORLD, &x_global);
